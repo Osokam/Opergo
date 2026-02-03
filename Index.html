@@ -1,0 +1,2437 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система планирования задач ООХМЛ№6</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c243c, #1a3a5f, #2c3e50);
+            color: #333;
+            line-height: 1.6;
+            padding: 15px;
+            min-height: 100vh;
+            background-attachment: fixed;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 25px 0;
+            color: white;
+            margin-bottom: 30px;
+            background: rgba(0, 20, 40, 0.92);
+            border-radius: 18px;
+            box-shadow: 0 8px 35px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%);
+            z-index: 0;
+        }
+        
+        h1 {
+            font-size: 2.4rem;
+            margin-bottom: 5px;
+            text-shadow: 0 3px 12px rgba(0, 0, 0, 0.45);
+            position: relative;
+            z-index: 1;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #4facfe, #00f2fe, #4facfe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 800;
+        }
+        
+        .settings-btn {
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.6rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .settings-btn:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+        
+        .group-selection {
+            background: white;
+            border-radius: 22px;
+            box-shadow: 0 12px 45px rgba(0, 0, 0, 0.4);
+            padding: 40px;
+            text-align: center;
+            max-width: 850px;
+            margin: 0 auto 30px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .section-title {
+            font-size: 2.0rem;
+            margin-bottom: 28px;
+            color: #0d3b66;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 4px;
+            background: linear-gradient(90deg, #3498db, #1a5276, #3498db);
+            border-radius: 2px;
+        }
+        
+        .groups-grid, .doctors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+        
+        .group-btn, .doctor-btn {
+            background: linear-gradient(135deg, #3498db, #1a5276);
+            color: white;
+            border: none;
+            border-radius: 18px;
+            padding: 30px 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 7px 22px rgba(0, 0, 0, 0.28);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            letter-spacing: -0.5px;
+        }
+        
+        .group-btn::before, .doctor-btn::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0;
+            transition: opacity 0.6s;
+            z-index: 1;
+        }
+        
+        .group-btn:hover::before, .doctor-btn:hover::before {
+            opacity: 1;
+        }
+        
+        .group-btn span, .doctor-btn span {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .group-btn:hover, .doctor-btn:hover {
+            transform: translateY(-5px) scale(1.04);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.42);
+        }
+        
+        .group-btn:active, .doctor-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 5px 18px rgba(0, 0, 0, 0.3);
+        }
+        
+        .group-btn.doctors {
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+        }
+        
+        .group-btn.post {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+        }
+        
+        .group-btn.operblock {
+            background: linear-gradient(135deg, #8e44ad, #6c3483);
+        }
+        
+        .doctor-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            font-size: 1.35rem;
+            min-height: 95px;
+            padding: 18px 15px;
+        }
+        
+        .dashboard {
+            display: none;
+            background: white;
+            border-radius: 22px;
+            box-shadow: 0 12px 45px rgba(0, 0, 0, 0.4);
+            padding: 35px;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 25px;
+            border-bottom: 2px solid #e6e9ef;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .dashboard-title {
+            font-size: 2.2rem;
+            color: #0d3b66;
+            font-weight: 700;
+        }
+        
+        .current-user {
+            background: #e3f2fd;
+            color: #0d47a1;
+            padding: 6px 18px;
+            border-radius: 22px;
+            font-weight: 600;
+            font-size: 1.15rem;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .logout-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 55px;
+            padding: 15px 35px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.35s ease;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 200px;
+            justify-content: center;
+        }
+        
+        .logout-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 9px 25px rgba(0, 0, 0, 0.38);
+            background: linear-gradient(135deg, #c0392b, #a93226);
+        }
+        
+        .logout-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .task-form {
+            background: #f8fafd;
+            border-radius: 18px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 18px rgba(0, 0, 0, 0.09);
+            border: 1px solid #e1e8f0;
+        }
+        
+        .form-title {
+            font-size: 1.9rem;
+            margin-bottom: 28px;
+            color: #0d3b66;
+            text-align: center;
+            position: relative;
+            padding-bottom: 12px;
+        }
+        
+        .form-title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 75%;
+            height: 4px;
+            background: linear-gradient(90deg, #3498db, #1a5276, #3498db);
+            border-radius: 3px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+            margin-bottom: 22px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #0d3b66;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        label::before {
+            content: "•";
+            color: #3498db;
+            font-size: 2.0rem;
+            line-height: 0.6;
+        }
+        
+        select, input, textarea {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #cbd5e1;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            transition: all 0.35s;
+            background: white;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+        }
+        
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.22), 0 5px 12px rgba(0, 0, 0, 0.12);
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            margin-top: 8px;
+        }
+        
+        .checkbox-group label {
+            margin: 0;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 14px;
+            height: 24px;
+            width: 24px;
+            cursor: pointer;
+            accent-color: #3498db;
+        }
+        
+        .antibiotic-field {
+            display: none;
+            margin-top: 18px;
+            animation: fadeIn 0.45s ease;
+        }
+        
+        .antibiotic-field.show {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #3498db, #1a5276);
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 20px 50px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            width: 100%;
+            max-width: 340px;
+            display: block;
+            margin: 30px auto 0;
+            box-shadow: 0 7px 22px rgba(0, 0, 0, 0.28);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+        
+        .submit-btn::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0;
+            transition: opacity 0.6s;
+            z-index: 1;
+        }
+        
+        .submit-btn:hover::after {
+            opacity: 1;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 11px 28px rgba(0, 0, 0, 0.38);
+            background: linear-gradient(135deg, #1a5276, #154360);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+        }
+        
+        .submit-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.18);
+            opacity: 0.88;
+        }
+        
+        .submit-btn:disabled:hover {
+            transform: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.18);
+        }
+        
+        .tasks-container {
+            margin-top: 28px;
+        }
+        
+        .tasks-title {
+            font-size: 2.0rem;
+            margin-bottom: 28px;
+            color: #0d3b66;
+            text-align: center;
+            position: relative;
+            padding-bottom: 14px;
+        }
+        
+        .tasks-title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 4px;
+            background: linear-gradient(90deg, #e67e22, #d35400, #e67e22);
+            border-radius: 3px;
+        }
+        
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+            gap: 30px;
+        }
+        
+        .task-card {
+            background: white;
+            border-radius: 18px;
+            padding: 28px;
+            box-shadow: 0 7px 22px rgba(0, 0, 0, 0.14);
+            border-left: 7px solid #3498db;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .task-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #3498db, #1a5276);
+        }
+        
+        .task-card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.22);
+            border-left-width: 9px;
+        }
+        
+        .task-card.urgent {
+            border-left-color: #e74c3c;
+        }
+        
+        .task-card.urgent::before {
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+        }
+        
+        .task-card.high {
+            border-left-color: #e67e22;
+        }
+        
+        .task-card.high::before {
+            background: linear-gradient(90deg, #e67e22, #d35400);
+        }
+        
+        .task-card.completed {
+            border-left-color: #27ae60;
+            opacity: 0.88;
+            background: #f8fff8;
+        }
+        
+        .task-card.completed::before {
+            background: linear-gradient(90deg, #27ae60, #219653);
+        }
+        
+        .task-card.operation-in-progress {
+            border-left-color: #9b59b6;
+            background: #f9f5ff;
+        }
+        
+        .task-card.operation-in-progress::before {
+            background: linear-gradient(90deg, #9b59b6, #8e44ad);
+        }
+        
+        .task-card.preparation {
+            border-left-color: #f39c12;
+            background: #fff9e6;
+        }
+        
+        .task-card.preparation::before {
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+        }
+        
+        .task-patient {
+            font-weight: 700;
+            font-size: 1.55rem;
+            margin-bottom: 12px;
+            color: #0d3b66;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .task-patient::before {
+            content: "👤";
+            font-size: 1.45rem;
+        }
+        
+        .task-type {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #0d47a1;
+            padding: 6px 16px;
+            border-radius: 28px;
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+        
+        .task-urgent {
+            background: #ffebee;
+            color: #b71c1c;
+            font-weight: 600;
+        }
+        
+        .task-high {
+            background: #fff8e1;
+            color: #5d4037;
+            font-weight: 600;
+        }
+        
+        .task-operation {
+            background: #f3e5f5;
+            color: #4a148c;
+        }
+        
+        .task-preparation {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+        }
+        
+        .task-info {
+            margin: 12px 0;
+            font-size: 1.1rem;
+            padding-left: 8px;
+            line-height: 1.6;
+            position: relative;
+        }
+        
+        .task-info::before {
+            content: "🕗";
+            position: absolute;
+            left: -28px;
+            top: 0;
+            font-size: 1.15rem;
+        }
+        
+        .task-info.antibiotic::before {
+            content: "💊";
+        }
+        
+        .task-info.room::before {
+            content: "🏥";
+        }
+        
+        .task-info.status::before {
+            content: "ℹ️";
+        }
+        
+        .task-info.preparation::before {
+            content: "📋";
+        }
+        
+        .task-actions {
+            display: flex;
+            gap: 14px;
+            margin-top: 22px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            flex: 1;
+            min-width: 110px;
+            padding: 14px 18px;
+            border: none;
+            border-radius: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+        }
+        
+        .action-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .start-btn {
+            background: linear-gradient(135deg, #3498db, #1a5276);
+            color: white;
+        }
+        
+        .complete-btn {
+            background: linear-gradient(135deg, #27ae60, #219653);
+            color: white;
+        }
+        
+        .transfer-btn {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+        
+        .call-btn {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            color: white;
+        }
+        
+        .icu-select-container {
+            margin-top: 18px;
+            display: none;
+        }
+        
+        .icu-select-container.show {
+            display: block;
+            animation: slideDown 0.45s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .comment-section {
+            margin-top: 20px;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 20px;
+        }
+        
+        .comment-input {
+            margin-top: 12px;
+            font-size: 1.0rem;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 20px 35px;
+            border-radius: 18px;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.45);
+            z-index: 10000;
+            transform: translateX(500px);
+            transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.25rem;
+            font-weight: 500;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.42);
+            animation: pulseNotification 2s infinite;
+        }
+        
+        @keyframes pulseNotification {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification::before {
+            content: "🔔";
+            font-size: 2.0rem;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.82);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+        
+        .modal.show {
+            display: flex;
+            animation: fadeInModal 0.35s ease;
+        }
+        
+        @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 45px;
+            max-width: 600px;
+            width: 92%;
+            box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+            text-align: center;
+            transform: translateY(25px);
+            animation: slideUpModal 0.45s ease forwards;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        @keyframes slideUpModal {
+            to { transform: translateY(0); }
+        }
+        
+        .modal-title {
+            font-size: 2.4rem;
+            margin-bottom: 25px;
+            color: #0d3b66;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .modal-title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 4px;
+            background: linear-gradient(90deg, #3498db, #1a5276, #3498db);
+            border-radius: 2px;
+        }
+        
+        .modal-message {
+            font-size: 1.5rem;
+            margin-bottom: 35px;
+            color: #2c3e50;
+            line-height: 1.5;
+        }
+        
+        .modal-btn {
+            background: linear-gradient(135deg, #3498db, #1a5276);
+            color: white;
+            border: none;
+            border-radius: 55px;
+            padding: 18px 50px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.35s;
+            min-width: 200px;
+            margin-top: 10px;
+        }
+        
+        .modal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 18px rgba(0, 0, 0, 0.28);
+        }
+        
+        .notification-permission {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            color: #0d3b66;
+            padding: 20px 28px;
+            border-radius: 18px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+            z-index: 9999;
+            display: none;
+            max-width: 380px;
+            animation: slideInUp 0.45s ease;
+        }
+        
+        @keyframes slideInUp {
+            from { transform: translateY(120px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .notification-permission.show {
+            display: block;
+        }
+        
+        .notification-permission p {
+            margin-bottom: 15px;
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+        
+        .permission-btns {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        
+        .allow-btn {
+            background: linear-gradient(135deg, #27ae60, #219653);
+            color: white;
+        }
+        
+        .deny-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .permission-btns button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            font-size: 1.05rem;
+            min-width: 100px;
+        }
+        
+        .permission-btns button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
+        }
+        
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #e74c3c;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.0rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+            z-index: 5;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+        
+        .doctor-selection {
+            display: none;
+            background: white;
+            border-radius: 22px;
+            box-shadow: 0 12px 45px rgba(0, 0, 0, 0.4);
+            padding: 40px;
+            text-align: center;
+            max-width: 950px;
+            margin: 0 auto 30px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .back-btn {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            color: white;
+            border: none;
+            border-radius: 55px;
+            padding: 12px 28px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.35s;
+            margin-bottom: 25px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.22);
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32);
+            background: linear-gradient(135deg, #7f8c8d, #6c7a7a);
+        }
+        
+        /* Patient Management Modal Styles */
+        .patient-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+            border: 1px solid #e1e8f0;
+            border-radius: 14px;
+            padding: 15px;
+            background: #f8fafd;
+        }
+        
+        .patient-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        
+        .remove-patient-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .remove-patient-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.3);
+        }
+        
+        .add-patient-form {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e8f0;
+        }
+        
+        .add-patient-input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #cbd5e1;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+        
+        .add-patient-btn {
+            background: linear-gradient(135deg, #27ae60, #219653);
+            color: white;
+            border: none;
+            border-radius: 55px;
+            padding: 14px 35px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            max-width: 250px;
+            margin: 15px auto 0;
+            display: block;
+        }
+        
+        .add-patient-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* Empty state for tasks */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+            font-size: 1.3rem;
+        }
+        
+        .empty-state::before {
+            content: "📋";
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .groups-grid, .doctors-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            
+            .group-btn, .doctor-btn {
+                padding: 22px 12px;
+                font-size: 1.35rem;
+                min-height: 95px;
+            }
+            
+            .doctor-btn {
+                font-size: 1.2rem;
+                min-height: 85px;
+                padding: 14px 10px;
+            }
+            
+            .tasks-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.0rem;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+            }
+            
+            .notification {
+                right: 20px;
+                left: 20px;
+                width: calc(100% - 40px);
+                text-align: center;
+                justify-content: center;
+                font-size: 1.15rem;
+            }
+            
+            .modal-content {
+                padding: 35px 25px;
+                margin: 15px;
+                max-width: 95%;
+            }
+            
+            .settings-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 1.4rem;
+                right: 18px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .group-btn, .doctor-btn {
+                font-size: 1.2rem;
+                padding: 18px 8px;
+                min-height: 85px;
+            }
+            
+            .doctor-btn {
+                font-size: 1.05rem;
+                min-height: 75px;
+            }
+            
+            .submit-btn {
+                padding: 18px 35px;
+                font-size: 1.2rem;
+            }
+            
+            .action-btn {
+                padding: 12px 10px;
+                font-size: 1.0rem;
+                min-width: 95px;
+            }
+            
+            .task-patient {
+                font-size: 1.35rem;
+            }
+            
+            .task-type {
+                font-size: 1.0rem;
+                padding: 5px 14px;
+            }
+            
+            .task-info {
+                font-size: 1.0rem;
+            }
+            
+            .status-badge {
+                width: 26px;
+                height: 26px;
+                font-size: 0.95rem;
+            }
+            
+            .settings-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 1.3rem;
+                right: 15px;
+            }
+            
+            header {
+                padding: 15px 0;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Система планирования задач ООХМЛ№6</h1>
+            <button class="settings-btn" id="settingsBtn">⚙️</button>
+        </header>
+        
+        <!-- Выбор группы -->
+        <section id="groupSelection" class="group-selection">
+            <h2 class="section-title">Выберите вашу группу</h2>
+            <div class="groups-grid">
+                <button class="group-btn doctors" data-group="doctors">
+                    <span>👨‍⚕️ Врачи</span>
+                </button>
+                <button class="group-btn post" data-group="post">
+                    <span>📋 Пост</span>
+                </button>
+                <button class="group-btn operblock" data-group="operblock">
+                    <span>⚕️ Оперблок</span>
+                </button>
+            </div>
+        </section>
+        
+        <!-- Выбор врача -->
+        <section id="doctorSelection" class="doctor-selection">
+            <button class="back-btn" id="backBtn">
+                <span>←</span> Назад к выбору группы
+            </button>
+            <h2 class="section-title">Выберите врача</h2>
+            <div class="doctors-grid">
+                <button class="doctor-btn" data-doctor="Крылов И.И.">Крылов И.И.</button>
+                <button class="doctor-btn" data-doctor="Кяльвияйнен И.М.">Кяльвияйнен И.М.</button>
+                <button class="doctor-btn" data-doctor="Кондрашина Ю.А.">Кондрашина Ю.А.</button>
+                <button class="doctor-btn" data-doctor="Матвеева Д.В.">Матвеева Д.В.</button>
+                <button class="doctor-btn" data-doctor="Симкин С.М.">Симкин С.М.</button>
+                <button class="doctor-btn" data-doctor="Винокурова Н.В.">Винокурова Н.В.</button>
+            </div>
+        </section>
+        
+        <!-- Панель врача -->
+        <section id="doctorsDashboard" class="dashboard">
+            <div class="dashboard-header">
+                <h2 class="dashboard-title">Панель врача</h2>
+                <div class="current-user" id="currentDoctor">Врач: <span id="doctorName">Не выбран</span></div>
+                <button class="logout-btn" id="logoutBtn">
+                    <span>🚪</span> Завершить работу
+                </button>
+            </div>
+            
+            <div class="task-form">
+                <h3 class="form-title">Создать новое назначение</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patientSelect">Пациент</label>
+                        <select id="patientSelect" required>
+                            <option value="">-- Выберите пациента --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="taskType">Тип назначения</label>
+                        <select id="taskType">
+                            <option value="medication">Медикаментозное назначение</option>
+                            <option value="monitoring">Мониторинг (АД, пульс и т.п.)</option>
+                            <option value="operation">Операция</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="priority">Приоритет</label>
+                        <select id="priority">
+                            <option value="normal">Обычный</option>
+                            <option value="high">Высокий</option>
+                            <option value="urgent">Срочный</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="scheduledDate">Дата и время назначения</label>
+                        <input type="datetime-local" id="scheduledDate" required>
+                    </div>
+                </div>
+                
+                <div id="operationFields" class="hidden">
+                    <div class="form-group">
+                        <label for="preparation">Подготовка к операции</label>
+                        <textarea id="preparation" placeholder="Опишите необходимую подготовку пациента к операции"></textarea>
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" id="antibiotics">
+                            Требуются антибиотики в операционную
+                        </label>
+                    </div>
+                    
+                    <div id="antibioticField" class="form-group antibiotic-field">
+                        <label for="antibioticName">Наименование антибиотика</label>
+                        <input type="text" id="antibioticName" placeholder="Введите название антибиотика">
+                    </div>
+                </div>
+                
+                <button class="submit-btn" id="createTaskBtn">Создать назначение</button>
+            </div>
+        </section>
+        
+        <!-- Панель поста -->
+        <section id="postDashboard" class="dashboard">
+            <div class="dashboard-header">
+                <h2 class="dashboard-title">Панель поста</h2>
+                <div class="current-user">Группа: Пост</div>
+                <button class="logout-btn" id="logoutBtnPost">
+                    <span>🚪</span> Завершить работу
+                </button>
+            </div>
+            
+            <div class="tasks-container">
+                <h3 class="tasks-title">Активные задачи</h3>
+                <div id="postTasks" class="tasks-grid">
+                    <div class="empty-state">Нет активных задач</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Панель оперблока -->
+        <section id="operblockDashboard" class="dashboard">
+            <div class="dashboard-header">
+                <h2 class="dashboard-title">Панель оперблока</h2>
+                <div class="current-user">Группа: Оперблок</div>
+                <button class="logout-btn" id="logoutBtnOperblock">
+                    <span>🚪</span> Завершить работу
+                </button>
+            </div>
+            
+            <div class="tasks-container">
+                <h3 class="tasks-title">Запланированные операции</h3>
+                <div id="operblockTasks" class="tasks-grid">
+                    <div class="empty-state">Нет запланированных операций</div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <div id="notification" class="notification">Новое срочное назначение!</div>
+    
+    <div id="notificationPermission" class="notification-permission">
+        <p>Разрешить уведомления о новых задачах?</p>
+        <div class="permission-btns">
+            <button class="allow-btn" id="allowNotificationsBtn">Разрешить</button>
+            <button class="deny-btn" id="denyNotificationsBtn">Отклонить</button>
+        </div>
+    </div>
+    
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title">✅ Успех</h3>
+            <p class="modal-message">Назначение добавлено</p>
+            <button class="modal-btn" id="closeModalBtn">Хорошо</button>
+        </div>
+    </div>
+    
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title">Управление пациентами</h3>
+            <div class="patient-list" id="patientList">
+            </div>
+            <div class="add-patient-form">
+                <input type="text" id="newPatientName" class="add-patient-input" placeholder="Введите ФИО пациента и палату (например: Иванов И.И. (Палата 215))">
+                <button class="add-patient-btn" id="addPatientBtn">Добавить пациента</button>
+            </div>
+            <button class="modal-btn" id="closeSettingsModalBtn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); margin-top: 25px;">Закрыть</button>
+        </div>
+    </div>
+    
+    <script>
+        // Глобальные переменные
+        let currentUserGroup = null;
+        let currentDoctor = null;
+        let tasks = [];
+        let notificationsAllowed = false;
+        let notificationPermissionAsked = false;
+        let newTaskCount = 0;
+        let postTasksQueue = [];
+        let operblockTasksQueue = [];
+        let audioContext = null;
+        let notificationSoundInitialized = false;
+        
+        // Список пациентов (будет сохраняться в localStorage)
+        let patients = [
+            "Иванов Иван Иванович (Палата 215)",
+            "Петрова Мария Сергеевна (Палата 304)",
+            "Сидоров Алексей Дмитриевич (Палата 118)",
+            "Козлова Анна Владимировна (Палата 422)",
+            "Смирнов Сергей Петрович (Палата 107)",
+            "Волкова Елена Андреевна (Палата 319)"
+        ];
+        
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM загружен, начинаем инициализацию");
+            
+            // Загрузить пациентов из localStorage, если есть
+            if (localStorage.getItem('hospitalPatients')) {
+                try {
+                    patients = JSON.parse(localStorage.getItem('hospitalPatients'));
+                } catch (e) {
+                    console.error("Ошибка загрузки пациентов из localStorage:", e);
+                }
+            }
+            
+            // Обновить список пациентов в селекте
+            updatePatientSelect();
+            
+            // Обновить список пациентов в настройках
+            updatePatientList();
+            
+            // Устанавливаем текущее время + 1 час по умолчанию
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            now.setMinutes(0);
+            document.getElementById('scheduledDate').value = formatDateTimeForInput(now);
+            
+            // Инициализация всех обработчиков событий
+            initEventListeners();
+            
+            // Проверяем поддержку уведомлений
+            checkNotificationPermission();
+            
+            console.log("Инициализация завершена");
+        });
+        
+        // Инициализация всех обработчиков событий
+        function initEventListeners() {
+            console.log("Инициализация обработчиков событий");
+            
+            // Обработчики выбора группы
+            document.querySelectorAll('.group-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const group = this.getAttribute('data-group');
+                    console.log("Выбрана группа:", group);
+                    selectGroup(group);
+                });
+            });
+            
+            // Обработчики выбора врача
+            document.querySelectorAll('.doctor-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const doctor = this.getAttribute('data-doctor');
+                    console.log("Выбран врач:", doctor);
+                    selectDoctor(doctor);
+                });
+            });
+            
+            // Кнопка настроек
+            document.getElementById('settingsBtn').addEventListener('click', openSettingsModal);
+            
+            // Кнопка назад
+            const backBtn = document.getElementById('backBtn');
+            if (backBtn) {
+                backBtn.addEventListener('click', backToGroupSelection);
+            }
+            
+            // Кнопки выхода
+            const logoutBtns = document.querySelectorAll('.logout-btn');
+            logoutBtns.forEach(btn => {
+                btn.addEventListener('click', logout);
+            });
+            
+            // Кнопка создания задачи
+            const createTaskBtn = document.getElementById('createTaskBtn');
+            if (createTaskBtn) {
+                createTaskBtn.addEventListener('click', createTask);
+            }
+            
+            // Кнопка закрытия модальных окон
+            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+            document.getElementById('closeSettingsModalBtn').addEventListener('click', closeSettingsModal);
+            
+            // Кнопки управления пациентами
+            document.getElementById('addPatientBtn').addEventListener('click', addPatient);
+            
+            // Кнопки разрешения уведомлений
+            const allowBtn = document.getElementById('allowNotificationsBtn');
+            const denyBtn = document.getElementById('denyNotificationsBtn');
+            if (allowBtn) allowBtn.addEventListener('click', allowNotifications);
+            if (denyBtn) denyBtn.addEventListener('click', denyNotifications);
+            
+            // Обработчик изменения типа задачи
+            const taskTypeSelect = document.getElementById('taskType');
+            if (taskTypeSelect) {
+                taskTypeSelect.addEventListener('change', toggleOperationFields);
+            }
+            
+            // Обработчик галочки антибиотиков
+            const antibioticsCheckbox = document.getElementById('antibiotics');
+            if (antibioticsCheckbox) {
+                antibioticsCheckbox.addEventListener('change', toggleAntibioticField);
+            }
+            
+            // Делегирование событий для динамических кнопок
+            document.addEventListener('click', function(e) {
+                // Обработка кнопок внутри task-card
+                if (e.target.closest('.task-card')) {
+                    const card = e.target.closest('.task-card');
+                    
+                    if (e.target.classList.contains('start-btn') || 
+                        e.target.closest('.start-btn')) {
+                        e.preventDefault();
+                        startTask(e.target.closest('.start-btn'));
+                    } else if (e.target.classList.contains('complete-btn') || 
+                              e.target.closest('.complete-btn')) {
+                        e.preventDefault();
+                        if (card.classList.contains('operation-in-progress')) {
+                            completeOperation(e.target.closest('.complete-btn'));
+                        } else {
+                            completeTask(e.target.closest('.complete-btn'));
+                        }
+                    } else if (e.target.classList.contains('call-btn') || 
+                              e.target.closest('.call-btn')) {
+                        e.preventDefault();
+                        callPatient(e.target.closest('.call-btn'));
+                    } else if (e.target.classList.contains('transfer-btn') || 
+                              e.target.closest('.transfer-btn')) {
+                        e.preventDefault();
+                        transferPatient(e.target.closest('.transfer-btn'));
+                    }
+                }
+                
+                // Обработка кнопок удаления пациентов
+                if (e.target.classList.contains('remove-patient-btn')) {
+                    e.preventDefault();
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    if (!isNaN(index)) {
+                        removePatient(index);
+                    }
+                }
+            });
+            
+            console.log("Обработчики событий установлены");
+        }
+        
+        // Проверка разрешения на уведомления
+        function checkNotificationPermission() {
+            if ('Notification' in window) {
+                if (Notification.permission === 'granted') {
+                    notificationsAllowed = true;
+                } else if (Notification.permission !== 'denied') {
+                    // Запросим разрешение при первом взаимодействии
+                    document.addEventListener('click', askNotificationPermission, { once: true });
+                }
+            }
+        }
+        
+        // Обновить список пациентов в селекте
+        function updatePatientSelect() {
+            const patientSelect = document.getElementById('patientSelect');
+            if (!patientSelect) return;
+            
+            patientSelect.innerHTML = '<option value="">-- Выберите пациента --</option>';
+            
+            patients.forEach((patient, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = patient;
+                patientSelect.appendChild(option);
+            });
+        }
+        
+        // Обновить список пациентов в настройках
+        function updatePatientList() {
+            const patientList = document.getElementById('patientList');
+            if (!patientList) return;
+            
+            patientList.innerHTML = '';
+            
+            if (patients.length === 0) {
+                patientList.innerHTML = '<div style="text-align: center; padding: 20px; color: #7f8c8d">Нет пациентов</div>';
+                return;
+            }
+            
+            patients.forEach((patient, index) => {
+                const patientItem = document.createElement('div');
+                patientItem.className = 'patient-item';
+                patientItem.innerHTML = `
+                    <span>${patient}</span>
+                    <button class="remove-patient-btn" data-index="${index}">×</button>
+                `;
+                patientList.appendChild(patientItem);
+            });
+        }
+        
+        // Открыть модальное окно настроек
+        function openSettingsModal() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.classList.add('show');
+                updatePatientList();
+            }
+        }
+        
+        // Закрыть модальное окно настроек
+        function closeSettingsModal() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.classList.remove('show');
+            }
+        }
+        
+        // Добавить пациента
+        function addPatient() {
+            const newPatientInput = document.getElementById('newPatientName');
+            if (!newPatientInput) return;
+            
+            const newPatientName = newPatientInput.value.trim();
+            
+            if (newPatientName === '') {
+                alert('Введите имя пациента');
+                return;
+            }
+            
+            // Проверяем, нет ли уже такого пациента
+            if (patients.includes(newPatientName)) {
+                alert('Такой пациент уже существует');
+                return;
+            }
+            
+            patients.push(newPatientName);
+            // Сохраняем в localStorage
+            localStorage.setItem('hospitalPatients', JSON.stringify(patients));
+            
+            // Обновляем интерфейс
+            updatePatientSelect();
+            updatePatientList();
+            
+            // Очищаем поле ввода
+            newPatientInput.value = '';
+            
+            alert('Пациент добавлен успешно');
+        }
+        
+        // Удалить пациента
+        function removePatient(index) {
+            if (index < 0 || index >= patients.length) return;
+            
+            if (confirm(`Вы уверены, что хотите удалить пациента "${patients[index]}"?`)) {
+                patients.splice(index, 1);
+                // Сохраняем в localStorage
+                localStorage.setItem('hospitalPatients', JSON.stringify(patients));
+                
+                // Обновляем интерфейс
+                updatePatientSelect();
+                updatePatientList();
+            }
+        }
+        
+        // Форматирование даты для input
+        function formatDateTimeForInput(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+        
+        // Выбор группы
+        function selectGroup(group) {
+            currentUserGroup = group;
+            
+            // Скрыть выбор группы
+            const groupSelection = document.getElementById('groupSelection');
+            if (groupSelection) {
+                groupSelection.style.display = 'none';
+            }
+            
+            // Если выбраны врачи, показать выбор врача
+            if (group === 'doctors') {
+                const doctorSelection = document.getElementById('doctorSelection');
+                if (doctorSelection) {
+                    doctorSelection.style.display = 'block';
+                }
+            } else {
+                // Показать соответствующую панель
+                showDashboard(group);
+            }
+        }
+        
+        // Назад к выбору группы
+        function backToGroupSelection() {
+            const doctorSelection = document.getElementById('doctorSelection');
+            const groupSelection = document.getElementById('groupSelection');
+            
+            if (doctorSelection) doctorSelection.style.display = 'none';
+            if (groupSelection) groupSelection.style.display = 'block';
+            
+            currentUserGroup = null;
+            currentDoctor = null;
+        }
+        
+        // Выбор врача
+        function selectDoctor(doctorName) {
+            currentDoctor = doctorName;
+            
+            const doctorNameSpan = document.getElementById('doctorName');
+            if (doctorNameSpan) {
+                doctorNameSpan.textContent = doctorName;
+            }
+            
+            const doctorSelection = document.getElementById('doctorSelection');
+            if (doctorSelection) {
+                doctorSelection.style.display = 'none';
+            }
+            
+            showDashboard('doctors');
+        }
+        
+        // Показать панель
+        function showDashboard(group) {
+            console.log("Показываем панель для группы:", group);
+            
+            // Скрыть все панели
+            document.querySelectorAll('.dashboard').forEach(dashboard => {
+                dashboard.style.display = 'none';
+            });
+            
+            // Показать выбранную панель
+            const dashboard = document.getElementById(`${group}Dashboard`);
+            if (dashboard) {
+                dashboard.style.display = 'block';
+            }
+            
+            // Обработать очереди задач для этой группы
+            if (group === 'post') {
+                // Добавить все задачи из очереди для поста
+                while (postTasksQueue.length > 0) {
+                    const task = postTasksQueue.shift();
+                    addPostTask(task);
+                }
+            } else if (group === 'operblock') {
+                // Добавить все задачи из очереди для оперблока
+                while (operblockTasksQueue.length > 0) {
+                    const task = operblockTasksQueue.shift();
+                    addOperationTask(task);
+                }
+            }
+            
+            // Запросить разрешение на уведомления для мобильных устройств
+            if (!notificationPermissionAsked && /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)) {
+                const notificationPermission = document.getElementById('notificationPermission');
+                if (notificationPermission) {
+                    notificationPermission.classList.add('show');
+                }
+                notificationPermissionAsked = true;
+            }
+        }
+        
+        // Завершение работы
+        function logout() {
+            currentUserGroup = null;
+            currentDoctor = null;
+            
+            // Скрыть все панели
+            document.querySelectorAll('.dashboard').forEach(dashboard => {
+                dashboard.style.display = 'none';
+            });
+            
+            // Скрыть выбор врача
+            const doctorSelection = document.getElementById('doctorSelection');
+            if (doctorSelection) {
+                doctorSelection.style.display = 'none';
+            }
+            
+            // Показать выбор группы
+            const groupSelection = document.getElementById('groupSelection');
+            if (groupSelection) {
+                groupSelection.style.display = 'block';
+            }
+            
+            // Сбросить форму
+            const patientSelect = document.getElementById('patientSelect');
+            if (patientSelect) patientSelect.value = '';
+            
+            const taskType = document.getElementById('taskType');
+            if (taskType) taskType.value = 'medication';
+            
+            const priority = document.getElementById('priority');
+            if (priority) priority.value = 'normal';
+            
+            const antibiotics = document.getElementById('antibiotics');
+            if (antibiotics) antibiotics.checked = false;
+            
+            const antibioticName = document.getElementById('antibioticName');
+            if (antibioticName) antibioticName.value = '';
+            
+            const operationFields = document.getElementById('operationFields');
+            if (operationFields) operationFields.classList.add('hidden');
+            
+            const antibioticField = document.getElementById('antibioticField');
+            if (antibioticField) antibioticField.classList.remove('show');
+            
+            // Скрыть уведомление о разрешении
+            const notificationPermission = document.getElementById('notificationPermission');
+            if (notificationPermission) {
+                notificationPermission.classList.remove('show');
+            }
+            
+            console.log("Пользователь вышел из системы");
+        }
+        
+        // Переключение полей операции
+        function toggleOperationFields() {
+            const taskType = document.getElementById('taskType');
+            const operationFields = document.getElementById('operationFields');
+            
+            if (!taskType || !operationFields) return;
+            
+            if (taskType.value === 'operation') {
+                operationFields.classList.remove('hidden');
+            } else {
+                operationFields.classList.add('hidden');
+                
+                const antibiotics = document.getElementById('antibiotics');
+                const antibioticField = document.getElementById('antibioticField');
+                
+                if (antibiotics) antibiotics.checked = false;
+                if (antibioticField) antibioticField.classList.remove('show');
+            }
+        }
+        
+        // Переключение поля антибиотика
+        function toggleAntibioticField() {
+            const antibioticField = document.getElementById('antibioticField');
+            const antibiotics = document.getElementById('antibiotics');
+            
+            if (!antibioticField || !antibiotics) return;
+            
+            if (antibiotics.checked) {
+                antibioticField.classList.add('show');
+            } else {
+                antibioticField.classList.remove('show');
+            }
+        }
+        
+        // Создание задачи
+        function createTask() {
+            const patientSelect = document.getElementById('patientSelect');
+            const taskType = document.getElementById('taskType');
+            const priority = document.getElementById('priority');
+            const scheduledDate = document.getElementById('scheduledDate');
+            
+            if (!patientSelect || !taskType || !priority || !scheduledDate) {
+                alert('Ошибка: элементы формы не найдены');
+                return;
+            }
+            
+            if (!patientSelect.value) {
+                alert('Пожалуйста, выберите пациента');
+                return;
+            }
+            
+            if (!scheduledDate.value) {
+                alert('Пожалуйста, укажите дату и время назначения');
+                return;
+            }
+            
+            const patientIndex = parseInt(patientSelect.value);
+            if (patientIndex < 0 || patientIndex >= patients.length) {
+                alert('Ошибка: неверный индекс пациента');
+                return;
+            }
+            
+            const patientName = patients[patientIndex];
+            
+            // Создаем объект задачи
+            const task = {
+                id: Date.now(),
+                patient: patientName,
+                type: taskType.value,
+                priority: priority.value,
+                scheduled: scheduledDate.value,
+                status: 'pending',
+                assignedBy: currentDoctor || 'Неизвестный врач',
+                createdAt: new Date().toISOString()
+            };
+            
+            if (taskType.value === 'operation') {
+                const preparation = document.getElementById('preparation');
+                const antibiotics = document.getElementById('antibiotics');
+                
+                if (preparation) task.preparation = preparation.value || 'Стандартная предоперационная';
+                if (antibiotics) task.antibiotics = antibiotics.checked;
+                
+                if (task.antibiotics) {
+                    const antibioticName = document.getElementById('antibioticName');
+                    task.antibioticName = antibioticName ? antibioticName.value || 'Не указан' : 'Не указан';
+                }
+                
+                // Генерируем случайную операционную
+                const operationRooms = ['14 ЗАЛ', '7А ЗАЛ'];
+                task.operationRoom = operationRooms[Math.floor(Math.random() * operationRooms.length)];
+                task.operationStatus = 'scheduled'; // scheduled, called, in_progress, completed
+                
+                // Добавляем в очередь для оперблока
+                operblockTasksQueue.push(task);
+                // Оповещение для оперблока
+                showNotification('operblock');
+                
+                // Создаем задачу подготовки для поста
+                const preparationTask = {
+                    id: Date.now() + 1,
+                    patient: patientName,
+                    type: 'ПОДГОТОВКА ПАЦИЕНТА',
+                    priority: 'high',
+                    info: `Подготовка к операции: ${task.preparation || 'Стандартная предоперационная'}`,
+                    status: 'pending',
+                    relatedOperationId: task.id,
+                    createdAt: new Date().toISOString(),
+                    preparationDetails: task.preparation || 'Стандартная предоперационная'
+                };
+                
+                // Добавляем задачу подготовки в очередь для поста
+                postTasksQueue.push(preparationTask);
+                // Оповещение для поста
+                showNotification('post');
+                
+                console.log("Операция создана:", task);
+                console.log("Задача подготовки создана:", preparationTask);
+            } 
+            // Если обычная задача для поста
+            else {
+                // Добавляем в очередь для поста
+                postTasksQueue.push(task);
+                // Оповещение для поста
+                showNotification('post');
+                
+                console.log("Задача для поста создана:", task);
+            }
+            
+            // Показать модальное окно об успехе
+            const successModal = document.getElementById('successModal');
+            if (successModal) {
+                successModal.classList.add('show');
+            }
+            
+            // Сброс формы
+            patientSelect.value = '';
+            
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            now.setMinutes(0);
+            scheduledDate.value = formatDateTimeForInput(now);
+            
+            const preparation = document.getElementById('preparation');
+            if (preparation) preparation.value = '';
+            
+            const antibiotics = document.getElementById('antibiotics');
+            if (antibiotics) antibiotics.checked = false;
+            
+            const antibioticName = document.getElementById('antibioticName');
+            if (antibioticName) antibioticName.value = '';
+            
+            const antibioticField = document.getElementById('antibioticField');
+            if (antibioticField) antibioticField.classList.remove('show');
+            
+            // Добавляем задачу в общий список
+            tasks.push(task);
+        }
+        
+        // Закрыть модальное окно
+        function closeModal() {
+            const modal = document.getElementById('successModal');
+            if (modal) {
+                modal.classList.remove('show');
+            }
+        }
+        
+        // Добавление операции в панель оперблока
+        function addOperationTask(task) {
+            const operblockTasks = document.getElementById('operblockTasks');
+            if (!operblockTasks) return;
+            
+            // Удаляем сообщение "Нет запланированных операций", если оно есть
+            const emptyState = operblockTasks.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            const taskCard = document.createElement('div');
+            taskCard.className = 'task-card';
+            taskCard.innerHTML = `
+                <div class="task-patient">${task.patient}</div>
+                <div class="task-type task-operation">🔪 Операция</div>
+                <div class="task-info room">${task.operationRoom || '14 ЗАЛ'}</div>
+                <div class="task-info">${formatDateTime(task.scheduled)}</div>
+                <div class="task-info">Подготовка: ${task.preparation || 'Стандартная предоперационная'}</div>
+                ${task.antibiotics ? `<div class="task-info antibiotic">Антибиотик: ${task.antibioticName || 'Не указан'}</div>` : ''}
+                <div class="task-actions">
+                    <button class="action-btn call-btn">Вызвать пациента</button>
+                </div>
+            `;
+            
+            // Сохраняем данные задачи в атрибутах для последующего использования
+            taskCard.dataset.taskId = task.id;
+            taskCard.dataset.patient = task.patient;
+            taskCard.dataset.room = task.operationRoom || '14 ЗАЛ';
+            taskCard.dataset.operationStatus = 'scheduled';
+            
+            operblockTasks.insertBefore(taskCard, operblockTasks.firstChild);
+        }
+        
+        // Вызов пациента в оперблоке
+        function callPatient(button) {
+            if (!button) return;
+            
+            const taskCard = button.closest('.task-card');
+            if (!taskCard) return;
+            
+            const patientName = taskCard.dataset.patient || 'Пациент';
+            const roomNumber = taskCard.dataset.room || '14 ЗАЛ';
+            const roomInfo = roomNumber;
+            
+            // Меняем интерфейс карточки операции на "Пациент вызван"
+            taskCard.dataset.operationStatus = 'called';
+            taskCard.innerHTML = `
+                <div class="task-patient">${patientName}</div>
+                <div class="task-type">⚠️ Пациент вызван</div>
+                <div class="task-info room">${roomInfo}</div>
+                <div class="task-info">Ожидание пациента в операционной</div>
+                <div class="task-actions">
+                    <button class="action-btn complete-btn">Пациент доставлен</button>
+                </div>
+            `;
+            
+            // Создаем задачу для поста "Подать пациента в операционную"
+            const postTask = {
+                id: Date.now(),
+                patient: patientName,
+                type: 'Подать пациента в операционную',
+                priority: 'high',
+                info: `Операционная: ${roomInfo}`,
+                status: 'pending',
+                roomInfo: roomInfo,
+                relatedOperationId: taskCard.dataset.taskId,
+                createdAt: new Date().toISOString()
+            };
+            
+            // Добавляем задачу в очередь для поста
+            postTasksQueue.push(postTask);
+            
+            // Оповещение для поста
+            showNotification('post');
+            
+            alert(`Пациент ${patientName} вызван в ${roomInfo}. Задача создана для поста.`);
+        }
+        
+        // Пациент доставлен (вызывается из карточки операции в оперблоке)
+        function patientDelivered(button) {
+            if (!button) return;
+            
+            const taskCard = button.closest('.task-card');
+            if (!taskCard) return;
+            
+            const patientName = taskCard.dataset.patient || 'Пациент';
+            const roomNumber = taskCard.dataset.room || '14 ЗАЛ';
+            const roomInfo = roomNumber;
+            
+            // Меняем статус операции на "Идёт операция"
+            taskCard.dataset.operationStatus = 'in_progress';
+            taskCard.className = 'task-card operation-in-progress';
+            taskCard.innerHTML = `
+                <div class="task-patient">${patientName}</div>
+                <div class="task-type">⚕️ ИДЁТ ОПЕРАЦИЯ</div>
+                <div class="task-info room">${roomInfo}</div>
+                <div class="task-info">Операция начата: ${formatDateTime(new Date().toISOString())}</div>
+                <div class="task-actions">
+                    <button class="action-btn complete-btn">Завершить операцию</button>
+                </div>
+            `;
+            
+            alert(`Пациент ${patientName} доставлен в операционную. Операция начата.`);
+        }
+        
+        // Завершение операции (вызывается из карточки "Идёт операция")
+        function completeOperation(button) {
+            if (!button) return;
+            
+            const taskCard = button.closest('.task-card');
+            if (!taskCard) return;
+            
+            const patientName = taskCard.dataset.patient || 'Пациент';
+            const roomNumber = taskCard.dataset.room || '14 ЗАЛ';
+            const roomInfo = roomNumber;
+            
+            // Меняем интерфейс карточки на выбор отделения
+            taskCard.className = 'task-card completed';
+            taskCard.innerHTML = `
+                <div class="task-patient">${patientName}</div>
+                <div class="task-type">✅ Операция завершена</div>
+                <div class="task-info room">${roomInfo}</div>
+                <div class="icu-select-container show">
+                    <div class="form-group">
+                        <label for="icuSelect">Выберите отделение для перевода</label>
+                        <select id="icuSelect" class="icu-select">
+                            <option value="">-- Выберите отделение --</option>
+                            <option value="ОРИТ№1">ОРИТ№1</option>
+                            <option value="ОРИТ№2">ОРИТ№2</option>
+                            <option value="ОРИТ№4">ОРИТ№4</option>
+                            <option value="ward">Вернуть в отделение</option>
+                        </select>
+                    </div>
+                    <div class="task-actions">
+                        <button class="action-btn transfer-btn">Перевести пациента</button>
+                    </div>
+                </div>
+            `;
+            
+            // Сохраняем данные для последующего использования
+            taskCard.dataset.patient = patientName;
+            taskCard.dataset.room = roomNumber;
+        }
+        
+        // Перевод пациента после операции
+        function transferPatient(button) {
+            if (!button) return;
+            
+            const taskCard = button.closest('.task-card');
+            if (!taskCard) return;
+            
+            const icuSelect = taskCard.querySelector('.icu-select');
+            if (!icuSelect) return;
+            
+            const selectedIcu = icuSelect.value;
+            const patientName = taskCard.dataset.patient || 'Пациент';
+            const roomNumber = taskCard.dataset.room || '14 ЗАЛ';
+            
+            if (!selectedIcu) {
+                alert('Пожалуйста, выберите отделение для перевода');
+                return;
+            }
+            
+            let postTask;
+            
+            if (selectedIcu === 'ward') {
+                // Задача "Забрать пациента из операционной"
+                postTask = {
+                    patient: patientName,
+                    type: `Забрать пациента из операционной`,
+                    priority: 'high',
+                    info: `Операционная: ${roomNumber}`,
+                    status: 'pending',
+                    roomInfo: roomNumber,
+                    createdAt: new Date().toISOString()
+                };
+                
+                alert(`Задача "Забрать пациента из операционной ${roomNumber}" создана для поста`);
+            } else {
+                // Пациент переведен в реанимацию
+                postTask = {
+                    patient: patientName,
+                    type: `ПЕРЕВЕДЕН В ${selectedIcu}`,
+                    priority: 'urgent',
+                    info: `Пациент ${patientName} переведен в ${selectedIcu}`,
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                };
+                
+                alert(`Пациент ${patientName} переведен в ${selectedIcu}. Уведомление отправлено на пост.`);
+            }
+            
+            // Добавляем задачу в очередь для поста
+            postTasksQueue.push(postTask);
+            
+            // Оповещение для поста
+            showNotification('post');
+            
+            // Удаляем карточку операции
+            taskCard.remove();
+            
+            // Проверяем, не осталось ли операций
+            const operblockTasks = document.getElementById('operblockTasks');
+            if (operblockTasks && operblockTasks.children.length === 0) {
+                operblockTasks.innerHTML = '<div class="empty-state">Нет запланированных операций</div>';
+            }
+        }
+        
+        // Добавление задачи для поста
+        function addPostTask(taskData) {
+            const postTasks = document.getElementById('postTasks');
+            if (!postTasks) return;
+            
+            // Удаляем сообщение "Нет активных задач", если оно есть
+            const emptyState = postTasks.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            const priorityClass = taskData.priority === 'urgent' ? 'urgent' : taskData.priority === 'high' ? 'high' : '';
+            const priorityBadge = taskData.priority === 'urgent' ? '<div class="status-badge">!</div>' : '';
+            let priorityTypeClass = '';
+            let priorityIcon = '';
+            
+            // Определяем класс и иконку в зависимости от типа задачи
+            if (taskData.type === 'ПОДГОТОВКА ПАЦИЕНТА') {
+                priorityTypeClass = 'task-preparation';
+                priorityIcon = '📋 ';
+            } else if (taskData.type.includes('ПЕРЕВЕДЕН')) {
+                priorityTypeClass = 'task-urgent';
+                priorityIcon = '❗ ';
+            } else {
+                priorityTypeClass = taskData.priority === 'urgent' ? 'task-urgent' : taskData.priority === 'high' ? 'task-high' : '';
+                priorityIcon = taskData.priority === 'urgent' ? '❗ ' : taskData.priority === 'high' ? '⚠️ ' : '';
+            }
+            
+            // Определяем класс карточки
+            let cardClass = `task-card ${priorityClass}`;
+            if (taskData.type === 'ПОДГОТОВКА ПАЦИЕНТА') {
+                cardClass += ' preparation';
+            }
+            
+            const taskCard = document.createElement('div');
+            taskCard.className = cardClass;
+            taskCard.innerHTML = `
+                ${priorityBadge}
+                <div class="task-patient">${taskData.patient}</div>
+                <div class="task-type ${priorityTypeClass}">
+                    ${priorityIcon}${taskData.type}
+                </div>
+                <div class="task-info ${taskData.type === 'ПОДГОТОВКА ПАЦИЕНТА' ? 'preparation' : taskData.type.includes('ПЕРЕВЕДЕН') ? 'status' : ''}">
+                    ${taskData.info || formatDateTime(taskData.scheduled) || 'Требуется выполнение'}
+                </div>
+                ${taskData.roomInfo ? `<div class="task-info room">${taskData.roomInfo}</div>` : ''}
+                <div class="task-actions">
+                    <button class="action-btn start-btn">Начать</button>
+                    <button class="action-btn complete-btn">Завершить</button>
+                </div>
+                <div class="comment-section">
+                    <label>Комментарий</label>
+                    <input type="text" class="comment-input" placeholder="Добавить комментарий...">
+                </div>
+            `;
+            
+            postTasks.insertBefore(taskCard, postTasks.firstChild);
+        }
+        
+        // Начало выполнения задачи
+        function startTask(button) {
+            if (!button) return;
+            
+            const taskCard = button.closest('.task-card');
+            if (!taskCard) return;
+            
+            button.textContent = 'В работе...';
+            button.disabled = true;
+            taskCard.style.opacity = '0.88';
+            taskCard.style.transform = 'scale(0.99)';
+            
+            // Если это задача "Подать пациента в операционную", обновляем статус в оперблоке
+            const taskType = taskCard.querySelector('.task-type').textContent;
+            if (taskType.includes('Подать пациента в операционную')) {
+                // Находим соответствующую операцию в оперблоке
+                const operblockTasks = document.getElementById('operblockTasks');
+                if (operblockTasks) {
+                    const operationCards = operblockTasks.querySelectorAll('.task-card');
+                    operationCards.forEach(card => {
+                        if (card.dataset.patient === taskCard.querySelector('.task-patient').textContent) {
+                            // Обновляем кнопку в карточке операции
+                            const actionsDiv = card.querySelector('.task-actions');
+                            if (actionsDiv) {
+                                actionsDiv.innerHTML = '<button class="action-btn complete-btn">Пациент доставлен</button>';
+                                // Добавляем обработчик для новой кнопки
+                                const newButton = actionsDiv.querySelector('.complete-btn');
+                                if (newButton) {
+                                    newButton.addEventListener('click', function() {
+                                        patientDelivered(this);
+                                    });
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+            
+            alert('Задача начата');
+        }
+        
+        // Завершение задачи
+        function completeTask(button) {
+            if (!button) return;
+            
+            const taskCard = button.closest('.task-card');
+            if (!taskCard) return;
+            
+            const patientName = taskCard.querySelector('.task-patient').textContent;
+            const taskInfo = taskCard.querySelector('.task-info').textContent;
+            const taskType = taskCard.querySelector('.task-type').textContent;
+            
+            taskCard.className = 'task-card completed';
+            taskCard.innerHTML = `
+                <div class="task-patient">${patientName}</div>
+                <div class="task-type">✅ Завершено</div>
+                <div class="task-info">${taskInfo}</div>
+            `;
+            
+            alert('Задача завершена');
+        }
+        
+        // Инициализация звука уведомления
+        function initNotificationSound() {
+            if (notificationSoundInitialized) return;
+            
+            try {
+                // Создаем аудиоконтекст при первом взаимодействии с пользователем
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                notificationSoundInitialized = true;
+                console.log("AudioContext инициализирован");
+            } catch (e) {
+                console.error("Ошибка инициализации AudioContext:", e);
+            }
+        }
+        
+        // Воспроизведение мелодии уведомления
+        function playNotificationSound() {
+            initNotificationSound();
+            
+            if (!audioContext || audioContext.state === 'suspended') {
+                // Пытаемся возобновить аудиоконтекст
+                if (audioContext) {
+                    audioContext.resume().catch(e => console.error("Ошибка возобновления аудио:", e));
+                }
+                return;
+            }
+            
+            try {
+                // Создаем приятную мелодию уведомления
+                const oscillator1 = audioContext.createOscillator();
+                const oscillator2 = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                // Настройки осцилляторов для приятной мелодии
+                oscillator1.type = 'sine';
+                oscillator1.frequency.setValueAtTime(880, audioContext.currentTime); // A5
+                oscillator1.frequency.exponentialRampToValueAtTime(1108.73, audioContext.currentTime + 0.3); // C#6
+                
+                oscillator2.type = 'sine';
+                oscillator2.frequency.setValueAtTime(659.25, audioContext.currentTime); // E5
+                oscillator2.frequency.exponentialRampToValueAtTime(830.61, audioContext.currentTime + 0.3); // G#5
+                
+                // Настройки громкости
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.8);
+                
+                // Подключение узлов
+                oscillator1.connect(gainNode);
+                oscillator2.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Запуск и остановка осцилляторов
+                oscillator1.start();
+                oscillator2.start();
+                oscillator1.stop(audioContext.currentTime + 0.8);
+                oscillator2.stop(audioContext.currentTime + 0.8);
+                
+                console.log("Звук уведомления воспроизведен");
+            } catch (e) {
+                console.error("Ошибка воспроизведения звука:", e);
+            }
+        }
+        
+        // Показать уведомление
+        function showNotification(targetGroup) {
+            // Воспроизвести звук
+            playNotificationSound();
+            
+            // Показать визуальное уведомление, если целевая группа активна
+            if (currentUserGroup === targetGroup) {
+                const notification = document.getElementById('notification');
+                if (notification) {
+                    notification.textContent = targetGroup === 'post' ? 'Новая задача для поста!' : 'Новая операция для оперблока!';
+                    notification.classList.add('show');
+                    
+                    setTimeout(() => {
+                        if (notification) {
+                            notification.classList.remove('show');
+                        }
+                    }, 6000);
+                }
+            }
+            
+            // Показать браузерное уведомление, если разрешено
+            if (notificationsAllowed && 'Notification' in window) {
+                try {
+                    new Notification('Новое назначение!', {
+                        body: targetGroup === 'post' ? 'Требуется выполнение задачи' : 'Требуется подготовка к операции',
+                        icon: 'https://cdn-icons-png.flaticon.com/512/25/25684.png'
+                    });
+                } catch (e) {
+                    console.log("Не удалось показать уведомление:", e);
+                }
+            }
+        }
+        
+        // Запросить разрешение на уведомления
+        function askNotificationPermission() {
+            if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    notificationsAllowed = (permission === 'granted');
+                    console.log("Разрешение на уведомления:", permission);
+                }).catch(error => {
+                    console.log('Ошибка запроса разрешения на уведомления:', error);
+                });
+            }
+        }
+        
+        // Разрешить уведомления
+        function allowNotifications() {
+            const notificationPermission = document.getElementById('notificationPermission');
+            if (notificationPermission) {
+                notificationPermission.classList.remove('show');
+            }
+            askNotificationPermission();
+        }
+        
+        // Отклонить уведомления
+        function denyNotifications() {
+            const notificationPermission = document.getElementById('notificationPermission');
+            if (notificationPermission) {
+                notificationPermission.classList.remove('show');
+            }
+            notificationsAllowed = false;
+        }
+        
+        // Форматирование даты для отображения
+        function formatDateTime(dateTimeString) {
+            try {
+                const date = new Date(dateTimeString);
+                return date.toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                return 'Дата не указана';
+            }
+        }
+    </script>
+</body>
+</html>
